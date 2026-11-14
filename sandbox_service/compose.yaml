@@ -1,0 +1,29 @@
+services:
+  chromium-sandbox:
+    build: .
+    container_name: link-scanner-chromium-sandbox
+    restart: unless-stopped
+    init: true
+    shm_size: 256m
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8787:8787"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=256m
+      - /home/pwuser/.cache:rw,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=./deploy/seccomp_profile.json
+    pids_limit: 128
+    mem_limit: 1200m
+    cpus: 1.50
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8787/health', timeout=2)"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+      start_period: 30s
